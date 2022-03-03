@@ -17,6 +17,7 @@ async function main() {
   mainCanvas.style.height = "100vh"
   mainCanvas.style.width = "100vw"
   mainCanvas.style.transform = "scale(-1, 1)"
+  const mainContext = mainCanvas.getContext("2d")!
   document.querySelector(".container")!.appendChild(mainCanvas)
 
   const cameraVideo = document.createElement("video");
@@ -41,10 +42,10 @@ async function main() {
       video: {
         facingMode: "user",
         width: {
-          ideal: 160
+          ideal: 320
         },
         height: {
-          ideal: 90
+          ideal: 180
         }
       },
     })
@@ -68,12 +69,36 @@ async function main() {
     cv.cvtColor(src, dst, cv.COLOR_RGBA2GRAY, 0);
     cv.threshold(dst, dst, 100, 255, cv.THRESH_OTSU);
     const contours = new cv.MatVector();
-    console.log(contours.get(0))
     const hierarchy = new cv.Mat();
     cv.findContours(dst, contours, hierarchy, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE);
-    console.log(contours.size())
-    cv.drawContours(src, contours, -1, [255, 0, 0, 255], 2);
+    const filterd = new cv.MatVector()
+    for (let i = 0; i < contours.size(); i++) {
+      if (contours.get(i).size().height > 10) {
+        filterd.push_back(contours.get(i))
+
+      }
+    }
+    // console.log(filterd.size())
+    // cv.drawContours(src, filterd, -1, [255, 0, 0, 255], 2);
     cv.imshow(MAIN_CANVAS_ID, src);
+    for (let i = 0; i < contours.size(); i++) {
+      if (contours.get(i).size().height > 10) {
+        filterd.push_back(contours.get(i))
+        const c = contours.get(i)
+        mainContext.beginPath();
+        for (let j = 0; j < c.size().height; j++) {
+          const x = c.data32S[j * 2]
+          const y = c.data32S[j * 2 + 1]
+          if (j == 0) {
+            mainContext.moveTo(x, y);
+          } else {
+            mainContext.lineTo(x, y);
+          }
+        }
+        mainContext.closePath();
+        mainContext.fill();
+      }
+    }
     src.delete();
     dst.delete();
     stats.end()
