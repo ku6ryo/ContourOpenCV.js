@@ -1,3 +1,3 @@
-![screenshot](./screenshot.gif)
+![screenshot](./screenshot.png)
 
-OpenVR.js Canny effect.
+Binarization + finding contour by OpenCV.js 
